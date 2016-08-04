@@ -87,7 +87,6 @@ class RegistroController extends TelegramBaseController {
 class LoginController extends TelegramBaseController {
 
   LoginHandler($) {
-    $.sendMessage('hola desde la clave');
     code = $.query.code;
     var info = JSON.stringify({
       "telegramId": $._message._from._id,
@@ -114,7 +113,7 @@ class LoginController extends TelegramBaseController {
         balance = datos.balance;
         minkaId = datos.id;
         telegramId = datos.idTelegram;
-        $.sendMessage(datos.message);
+        $.sendMessage('Gracias ' + 'nombre ' + datos.message + ' ahora puedes utilizar todos los servicios de mislukasbot');
       }else{
         send = false;
         $.sendMessage(datos.message);
