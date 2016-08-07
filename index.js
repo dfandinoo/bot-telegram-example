@@ -50,31 +50,36 @@ class RegistroController extends TelegramBaseController {
     telegramId = $._message._from._id;
     phone = $.query.phone;
     code = $.query.code;
-    var info = JSON.stringify({
-      "firstname": nombre,
-      "lastname": apellido,
-      "phone": phone,
-      "telegramId": telegramId,
-      "code": code
-    });
-    request.post({
-      type: "POST",
-      url: 'http://api.minka.io:8081/telegram/registro',
-      headers: {
-        "content-type" : "application/json"
-      },
-      body: info,
-      dataType: 'json'
-    }, function(err, response, body){
-      var datos = JSON.parse(body);
-      if(err){
-          console.log(err)
-      }else if(datos != null) {
-        $.sendMessage($._message._from._firstName + " te has registrado con exito.");
-      }else {
-        $.sendMessage("Algo ha salido mal vuelve a hacer el proceso con el comando /registro");
-      }
-    });
+    if(phone == null || code == null){
+      $.sendMessage('Lo siento no mandaste alguno de los parametros vuelva a intentarlo');
+    } else{
+      var info = JSON.stringify({
+        "firstname": nombre,
+        "lastname": apellido,
+        "phone": phone,
+        "telegramId": telegramId,
+        "code": code
+      });
+      request.post({
+        type: "POST",
+        url: 'http://api.minka.io:8081/telegram/registro',
+        headers: {
+          "content-type" : "application/json"
+        },
+        body: info,
+        dataType: 'json'
+      }, function(err, response, body){
+        var datos = JSON.parse(body);
+        if(err){
+            console.log(err)
+            return;
+        }else if(datos != null) {
+          $.sendMessage($._message._from._firstName + " te has registrado con exito.");
+        }else {
+          $.sendMessage("Algo ha salido mal vuelve a hacer el proceso con el comando /registro");
+        }
+      });
+    }
   }
 
   get routes() {
@@ -88,37 +93,41 @@ class LoginController extends TelegramBaseController {
 
   LoginHandler($) {
     code = $.query.code;
-    var info = JSON.stringify({
-      "telegramId": $._message._from._id,
-      "code": code
-    });
-    request.post({
-      type: "POST",
-      url: 'http://api.minka.io:8081/telegram/loginMislukas',
-      headers: {
-        "content-type": "application/json",
-      },
-      body: info,
-      dataType: 'json'
-      }, function(err, response, body){
-      var datos = JSON.parse(body);
-      if(err){
-        console.log(err);
-        return;
-      }else if(datos.verificado){
-        login = true;
-        nombre = datos.nombre;
-        apellido = datos.apellido;
-        phone = datos.phone;
-        balance = datos.balance;
-        minkaId = datos.id;
-        telegramId = datos.idTelegram;
-        $.sendMessage('Gracias ' + 'nombre ' + datos.message + ' ahora puedes utilizar todos los servicios de mislukasbot');
-      }else{
-        send = false;
-        $.sendMessage(datos.message);
-      }
-    });
+    if(code == null) {
+      $.sendMessage('Lo siento no mandaste alguno de los parametros vuelva a intentarlo');
+    } else{
+      var info = JSON.stringify({
+        "telegramId": $._message._from._id,
+        "code": code
+      });
+      request.post({
+        type: "POST",
+        url: 'http://api.minka.io:8081/telegram/loginMislukas',
+        headers: {
+          "content-type": "application/json",
+        },
+        body: info,
+        dataType: 'json'
+        }, function(err, response, body){
+        var datos = JSON.parse(body);
+        if(err){
+          console.log(err);
+          return;
+        }else if(datos.verificado){
+          login = true;
+          nombre = datos.nombre;
+          apellido = datos.apellido;
+          phone = datos.phone;
+          balance = datos.balance;
+          minkaId = datos.id;
+          telegramId = datos.idTelegram;
+          $.sendMessage('Gracias ' + 'nombre ' + datos.message + ' ahora puedes utilizar todos los servicios de mislukasbot');
+        }else{
+          send = false;
+          $.sendMessage(datos.message);
+        }
+      });
+    }
   }
 
   get routes() {
@@ -164,33 +173,37 @@ class SaldoController extends TelegramBaseController {
 class EnviarController extends TelegramBaseController {
 
   EnviarHandler($) {
-    var info = JSON.stringify({
-      "phoneSend": phone,
-      "phoneReceive": $.query.telefono,
-      "amount": {
-        "currency": "45646514",
-        "value": $.query.valor
-      }
-    });
-    console.log(info);
-    request.post({
-      type: "POST",
-      url: 'http://api.minka.io:8081/transfer',
-      headers: {
-        "content-type": "application/json",
-      },
-      body: info,
-      dataType: 'json'
-      }, function(err, response, body){
-        var datos = JSON.parse(body);
-        if(err){
-          console.log(err)
-        }else if(datos != null && datos.status){
-          $.sendMessage('Tu transferencia/pago se realizo con exito, si quieres ejecuta el comando /saldo y mira como quedo tu saldo');
-        }else{
-          $.sendMessage('Tu transferencia/pago no se pudo procesar');
+    if($.query.telefono == null || $.query.valor == null) {
+      $.sendMessage('Lo siento no mandaste alguno de los parametros vuelva a intentarlo');
+    }else {
+      var info = JSON.stringify({
+        "phoneSend": phone,
+        "phoneReceive": $.query.telefono,
+        "amount": {
+          "currency": "45646514",
+          "value": $.query.valor
         }
-    });
+      });
+      console.log(info);
+      request.post({
+        type: "POST",
+        url: 'http://api.minka.io:8081/transfer',
+        headers: {
+          "content-type": "application/json",
+        },
+        body: info,
+        dataType: 'json'
+        }, function(err, response, body){
+          var datos = JSON.parse(body);
+          if(err){
+            console.log(err)
+          }else if(datos != null && datos.status){
+            $.sendMessage('Tu transferencia/pago se realizo con exito, si quieres ejecuta el comando /saldo y mira como quedo tu saldo');
+          }else{
+            $.sendMessage('Tu transferencia/pago no se pudo procesar');
+          }
+      });
+    }
   }
 
   get routes() {
