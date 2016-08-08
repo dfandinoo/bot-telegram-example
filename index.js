@@ -1,17 +1,12 @@
-"use strict"
 
-const express = require('express');
-const app = express();
-const request = require('request');
-const bodyParser = require('body-parser');
+var tg = require('telegram-node-bot')('204461749:AAGR26f_2eN3nAwekbDMuY1zkQfHHptoPl0');
+var express = require('express');
+var app = express();
+var request = require('request');
+var bodyParser = require('body-parser');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
-const Telegram = require('telegram-node-bot')
-const TelegramBaseController = Telegram.TelegramBaseController
-const TelegramBaseInlineQueryController = Telegram.TelegramBaseInlineQueryController
-const tg = new Telegram.Telegram('204461749:AAGR26f_2eN3nAwekbDMuY1zkQfHHptoPl0')
 
 var phone;
 var code;
@@ -23,39 +18,71 @@ var balance;
 var telegramId;
 var minkaId;
 
-class StartController extends TelegramBaseController {
-    /**
-     * @param {Scope} $
-     */
-    startHandler($) {
-      $.sendMessage('hola ' + $._message._from._firstName + " gracias por utilizar mislukasbot para empezar puedes mirar con el comando /help todo lo que puedes hacer");
-    }
+tg.router
+  .when('/start', 'StartController')
+  .when('/login :code', 'LoginController')
+  .when('/enviar :telefono :valor', 'EnviarController')
+  .when('/saldo', 'SaldoController')
+  .when('/registro :phone :code', 'RegistroController')
+  //.otherwise( OtherwiseController())
 
-    get routes() {
-        return {
-            '/start': 'startHandler'
-        }
-    }
-}
+  tg.controller('StartController', (res) => {
+    tg.for('/start', ($) => {
+      $.sendMessage('hola ' + $.user.first_name + " gracias por utilizar mislukasbot para empezar puedes mirar con el comando /help todo lo que puedes hacer");
+    })
+  })
 
-class RegistroController extends TelegramBaseController {
+  tg.controller('LoginController', (res) => {
+    tg.for('/login :code', ($) => {
+      code = $.query.code;
+      if(code == null) {
+        $.sendMessage('Lo siento no mandaste alguno de los parametros vuelva a intentarlo');
+      } else{
+        var info = JSON.stringify({
+          "telegramId": $.user.id,
+          "code": code
+        });
+        request.post({
+          type: "POST",
+          url: 'http://api.minka.io:8081/telegram/loginMislukas',
+          headers: {
+            "content-type": "application/json",
+          },
+          body: info,
+          dataType: 'json'
+          }, function(err, response, body){
+            var datos = JSON.parse(body);
+            if(err){
+              console.log(err);
+              return;
+            }else if(datos.verificado){
+              login = true;
+              nombre = datos.nombre;
+              apellido = datos.apellido;
+              phone = datos.phone;
+              balance = datos.balance;
+              minkaId = datos.id;
+              telegramId = datos.idTelegram;
+              $.sendMessage('Gracias ' + nombre  + ' ahora puedes utilizar todos los servicios de mislukasbot');
+            }else{
+              send = false;
+              $.sendMessage(datos.message);
+            }
+          });
+      }
+    })
+  })
 
-  /*
-  datos que trae para hacer el RegistroHandler
-  firstname, lastname, phone, userId, code,
-  */
-  registroHandler($) {
-    nombre = $._message._from._firstName;
-    apellido = $._message._from._lastName;
-    telegramId = $._message._from._id;
-    phone = $.query.phone;
-    code = $.query.code;
-    if(phone == null || code == null){
-      $.sendMessage('Lo siento no mandaste alguno de los parametros vuelva a intentarlo');
-    } else{
+  tg.controller('RegistroController', (res) => {
+    tg.for('/registro :phone :code', ($) => {
+      nombre = $.user.first_name;
+      apellido = $.user.last_name;
+      telegramId = $.user.id;
+      phone = $.query.phone;
+      code = $.query.code;
       var info = JSON.stringify({
         "firstname": nombre,
-        "lastname": apellido,
+        "lastname": "fdsaf",
         "phone": phone,
         "telegramId": telegramId,
         "code": code
@@ -71,111 +98,44 @@ class RegistroController extends TelegramBaseController {
       }, function(err, response, body){
         var datos = JSON.parse(body);
         if(err){
-            console.log(err)
-            return;
-        }else if(datos != null) {
-          $.sendMessage($._message._from._firstName + " te has registrado con exito.");
-        }else {
+          console.log(err)
+        }else if(!datos.Person) {
+          $.sendMessage($.user.first_name + " te has registrado con exito.");
+        }else if(datos.Person){
+          $.sendMessage("El usuario ya existe en la app");
+        }else{
           $.sendMessage("Algo ha salido mal vuelve a hacer el proceso con el comando /registro");
         }
-      });
-    }
-  }
-
-  get routes() {
-      return {
-          '/registro :phone :code': 'registroHandler'
-      }
-  }
-}
-
-class LoginController extends TelegramBaseController {
-
-  LoginHandler($) {
-    code = $.query.code;
-    if(code == null) {
-      $.sendMessage('Lo siento no mandaste alguno de los parametros vuelva a intentarlo');
-    } else{
-      var info = JSON.stringify({
-        "telegramId": $._message._from._id,
-        "code": code
-      });
-      request.post({
-        type: "POST",
-        url: 'http://api.minka.io:8081/telegram/loginMislukas',
+        });
+  })
+})
+tg.controller('SaldoController', (res) => {
+  tg.for('/saldo', ($) => {
+    if(login == true){
+      request.get({
+        type: "GET",
+        url: 'http://api.minka.io:8081/person/'+minkaId+'/balance',
         headers: {
           "content-type": "application/json",
         },
-        body: info,
         dataType: 'json'
-        }, function(err, response, body){
+      }, function(err, response, body){
         var datos = JSON.parse(body);
+        var saldo = datos.wallet;
         if(err){
-          console.log(err);
-          return;
-        }else if(datos.verificado){
-          login = true;
-          nombre = datos.nombre;
-          apellido = datos.apellido;
-          phone = datos.phone;
-          balance = datos.balance;
-          minkaId = datos.id;
-          telegramId = datos.idTelegram;
-          $.sendMessage('Gracias ' + 'nombre ' + datos.message + ' ahora puedes utilizar todos los servicios de mislukasbot');
-        }else{
-          send = false;
-          $.sendMessage(datos.message);
+          console.log(err)
+        }else if(datos.wallet){
+          $.sendMessage(nombre +" tu saldo en estos momentos es de " + saldo.balance + " LUK");
         }
       });
-    }
-  }
-
-  get routes() {
-      return {
-          '/login :code': 'LoginHandler'
-      }
-  }
-}
-
-class SaldoController extends TelegramBaseController {
-
-  SaldoHandler($) {
-    if(login == true){
-      request.get({
-            type: "GET",
-            url: 'http://api.minka.io:8081/person/'+minkaId+'/balance',
-            headers: {
-              "content-type": "application/json",
-            },
-            dataType: 'json'
-          }, function(err, response, body){
-            var datos = JSON.parse(body);
-            var saldo = datos.wallet;
-            if(err){
-              console.log(err)
-            }else if(datos.wallet){
-                $.sendMessage(nombre +" tu saldo en estos momentos es de " + saldo.balance + " LUK");
-            }
-          });
     }else{
       $.sendMessage("Aun no te has logueado y si no me dejas saber quien eres no te puedo ayudar :c, dime quien eres con el comando /login");
     }
-  }
-
-  get routes() {
-      return {
-          '/saldo': 'SaldoHandler'
-      }
-  }
-
-}
-
-class EnviarController extends TelegramBaseController {
-
-  EnviarHandler($) {
-    if($.query.telefono == null || $.query.valor == null) {
-      $.sendMessage('Lo siento no mandaste alguno de los parametros vuelva a intentarlo');
-    }else {
+  })
+})
+tg.controller('EnviarController', (res) => {
+  tg.for('/enviar :telefono :valor', ($) => {
+    if(login == true){
       var info = JSON.stringify({
         "phoneSend": phone,
         "phoneReceive": $.query.telefono,
@@ -202,53 +162,9 @@ class EnviarController extends TelegramBaseController {
           }else{
             $.sendMessage('Tu transferencia/pago no se pudo procesar');
           }
-      });
-    }
-  }
-
-  get routes() {
-      return {
-          '/enviar :valor :telefono': 'EnviarHandler'
+        });
+      }else{
+      $.sendMessage("Aun no te has logueado y si no me dejas saber quien eres no te puedo ayudar :c, dime quien eres con el comando /login");
       }
-  }
-
-}
-
-// class CodigoController extends TelegramBaseController {
-//
-//   CodigoHandler($) {
-//     $.sendMessage('hola desde el codigo');
-//   }
-//
-//   get routes() {
-//       return {
-//           '/codigo': 'CodigoHandler'
-//       }
-//   }
-// }
-
-
-
-// class mislukasController extends TelegramBaseInlineQueryController {
-//
-//     handle($) {
-//       $.getChat().then(function(msg){
-//         console.log(msg)
-//       });
-//       $.getChatMember($.userId).then(function(msg){
-//          console.log(msg)
-//       });
-//       $.getChatMembersCount().then(function(msg){
-//          console.log(msg)
-//       });
-//     }
-//
-// }
-
-tg.router
-    .when(['/start'], new StartController())
-    .when('/login :code', new LoginController())
-    .when('/enviar :valor :telefono', new EnviarController())
-    .when('/saldo', new SaldoController())
-    .when(['/registro :phone :code'], new RegistroController())
-    //.inlineQuery(new mislukasController())
+  })
+})
