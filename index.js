@@ -24,7 +24,7 @@ tg.router
   .when('/enviar :telefono :valor', 'EnviarController')
   .when('/saldo', 'SaldoController')
   .when('/registro :phone :code', 'RegistroController')
-  when(['/help'], 'help').
+  .when('/help', 'help')
   //.otherwise( OtherwiseController())
 
   tg.controller('StartController', (res) => {
