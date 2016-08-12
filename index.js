@@ -24,6 +24,7 @@ tg.router
   .when('/enviar :telefono :valor', 'EnviarController')
   .when('/saldo', 'SaldoController')
   .when('/registro :phone :code', 'RegistroController')
+  when(['/help'], 'help').
   //.otherwise( OtherwiseController())
 
   tg.controller('StartController', (res) => {
@@ -133,38 +134,56 @@ tg.controller('SaldoController', (res) => {
     }
   })
 })
+
 tg.controller('EnviarController', (res) => {
   tg.for('/enviar :telefono :valor', ($) => {
     if(login == true){
-      var info = JSON.stringify({
-        "phoneSend": phone,
-        "phoneReceive": $.query.telefono,
-        "amount": {
-          "currency": "45646514",
-          "value": $.query.valor
-        }
-      });
-      console.log(info);
-      request.post({
-        type: "POST",
-        url: 'http://api.minka.io:8081/transfer',
-        headers: {
-          "content-type": "application/json",
-        },
-        body: info,
-        dataType: 'json'
-        }, function(err, response, body){
-          var datos = JSON.parse(body);
-          if(err){
-            console.log(err)
-          }else if(datos != null && datos.status){
-            $.sendMessage('Tu transferencia/pago se realizo con exito, si quieres ejecuta el comando /saldo y mira como quedo tu saldo');
-          }else{
-            $.sendMessage('Tu transferencia/pago no se pudo procesar');
+      if($.query.telefono === phone){
+        $.sendMessage("No te puedes enviar dinero a ti mismo");
+      }else{
+        var info = JSON.stringify({
+          "phoneSend": phone,
+          "phoneReceive": $.query.telefono,
+          "amount": {
+            "currency": "45646514",
+            "value": $.query.valor
           }
         });
-      }else{
-      $.sendMessage("Aun no te has logueado y si no me dejas saber quien eres no te puedo ayudar :c, dime quien eres con el comando /login");
+        console.log(info);
+        request.post({
+          type: "POST",
+          url: 'http://api.minka.io:8081/transfer',
+          headers: {
+            "content-type": "application/json",
+          },
+          body: info,
+          dataType: 'json'
+          }, function(err, response, body){
+            var datos = JSON.parse(body);
+            if(err){
+              console.log(err)
+            }else if(datos != null && datos.status){
+              $.sendMessage('Tu transferencia/pago se realizo con exito, si quieres ejecuta el comando /saldo y mira como quedo tu saldo');
+            }else{
+              $.sendMessage('Tu transferencia/pago no se pudo procesar');
+            }
+          });
+        }else{
+        $.sendMessage("Aun no te has logueado y si no me dejas saber quien eres no te puedo ayudar :c, dime quien eres con el comando /login");
+        }
       }
+  })
+})
+
+tg.controller('help', ($) => {
+  tg.for('/help', ($) => {
+    $.sendMessage("hola, gracias por contar conmigo\n"+
+      "puedes utilizar los siguientes comandos para hablar conmigo\n"+
+      "/registro (:telefono :codigo) \t crea una cuenta en nuestra app\n"+
+      "/login (:codigo)\t\t ingresa a la app\n"+
+      "/enviar (:telefono :valor)\t envia dinero a otra cuenta\n"+
+      "/saldo \t consulta tu saldo\n"+
+      "/help \t menu de comandos\n"+
+      "Espero poder ayudarte en todo lo que necesites");
   })
 })
