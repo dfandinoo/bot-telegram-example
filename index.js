@@ -168,9 +168,10 @@ tg.controller('EnviarController', (res) => {
               $.sendMessage('Tu transferencia/pago no se pudo procesar');
             }
           });
-      }else{
-        $.sendMessage("Aun no te has logueado y si no me dejas saber quien eres no te puedo ayudar :c, dime quien eres con el comando /login");
       }
+    }else{
+      $.sendMessage("Aun no te has logueado y si no me dejas saber quien eres no te puedo ayudar :c, dime quien eres con el comando /login");
+    }
   })
 })
 
