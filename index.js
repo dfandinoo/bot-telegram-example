@@ -20,10 +20,10 @@ var minkaId;
 
 tg.router
   .when('/start', 'StartController')
-  .when('/login :code', 'LoginController')
-  .when('/enviar :telefono :valor', 'EnviarController')
+  .when('/login', 'LoginController')
+  .when('/enviar', 'EnviarController')
   .when('/saldo', 'SaldoController')
-  .when('/registro :phone :code', 'RegistroController')
+  .when('/registro', 'RegistroController')
   .when('/help', 'help')
   //.otherwise( OtherwiseController())
 
@@ -34,80 +34,146 @@ tg.router
   })
 
   tg.controller('LoginController', (res) => {
-    tg.for('/login :code', ($) => {
-      code = $.query.code;
-      if(code == null) {
-        $.sendMessage('Lo siento no mandaste alguno de los parametros vuelva a intentarlo');
-      } else{
-        var info = JSON.stringify({
-          "telegramId": $.user.id,
-          "code": code
-        });
-        request.post({
-          type: "POST",
-          url: 'http://api.minka.io:8081/telegram/loginMislukas',
-          headers: {
-            "content-type": "application/json",
+    tg.for('/login', ($) => {
+      var form = {
+          codigo: {
+              q: 'Escribe tu codigo',
+              error: 'Lo siento, ingresaste un valor incorrecto',
+              validator: (input, callback) => {
+                  if(input['text']) {
+                      callback(true)
+                      return
+                  }
+                  callback(false)
+              }
           },
-          body: info,
-          dataType: 'json'
-          }, function(err, response, body){
-            var datos = JSON.parse(body);
-            if(err){
-              console.log(err);
-              return;
-            }else if(datos.verificado){
-              login = true;
-              nombre = datos.nombre;
-              apellido = datos.apellido;
-              phone = datos.phone;
-              balance = datos.balance;
-              minkaId = datos.id;
-              telegramId = datos.idTelegram;
-              $.sendMessage('Gracias ' + nombre  + ' ahora puedes utilizar todos los servicios de mislukasbot');
-            }else{
-              send = false;
-              $.sendMessage(datos.message);
-            }
+          confirmCodigo: {
+              q: 'Confirma el codigo',
+              error: 'Lo siento, ingresaste un valor incorrecto',
+              validator: (input, callback) => {
+                  if(input['text']) {
+                      callback(true)
+                      return
+                  }
+                  callback(false)
+              }
+          }
+        }
+        $.runForm(form, (result) => {
+          if(result.codigo != result.confirmCodigo){
+            $.sendMessage("los codigos no coinciden vuelve a intentarlo");
+            return;
+          }
+          var info = JSON.stringify({
+            "telegramId": $.user.id,
+            "code": result.codigo
           });
-      }
+          request.post({
+            type: "POST",
+            url: 'http://api.minka.io:8081/telegram/loginMislukas',
+            headers: {
+              "content-type": "application/json",
+            },
+            body: info,
+            dataType: 'json'
+            }, function(err, response, body){
+              var datos = JSON.parse(body);
+              if(err){
+                console.log(err);
+                return;
+              }else if(datos.verificado){
+                login = true;
+                nombre = datos.nombre;
+                apellido = datos.apellido;
+                phone = datos.phone;
+                balance = datos.balance;
+                minkaId = datos.id;
+                telegramId = datos.idTelegram;
+                $.sendMessage('Gracias ' + nombre  + ' ahora puedes utilizar todos los servicios de mislukasbot');
+              }else{
+                send = false;
+                $.sendMessage(datos.message);
+              }
+            });
+        })
     })
   })
 
   tg.controller('RegistroController', (res) => {
-    tg.for('/registro :phone :code', ($) => {
-      nombre = $.user.first_name;
-      apellido = $.user.last_name;
-      telegramId = $.user.id;
-      phone = $.query.phone;
-      code = $.query.code;
-      var info = JSON.stringify({
-        "firstname": nombre,
-        "lastname": "fdsaf",
-        "phone": phone,
-        "telegramId": telegramId,
-        "code": code
-      });
-      request.post({
-        type: "POST",
-        url: 'http://api.minka.io:8081/telegram/registro',
-        headers: {
-          "content-type" : "application/json"
-        },
-        body: info,
-        dataType: 'json'
-      }, function(err, response, body){
-        var datos = JSON.parse(body);
-        if(err){
-          console.log(err)
-        }else if(!datos.Person) {
-          $.sendMessage($.user.first_name + " te has registrado con exito.");
-        }else if(datos.Person){
-          $.sendMessage("El usuario ya existe en la app");
-        }else{
-          $.sendMessage("Algo ha salido mal vuelve a hacer el proceso con el comando /registro");
+    tg.for('/registro', ($) => {
+      var form = {
+          phone: {
+              q: 'Cual es tu numero de celular',
+              error: 'Lo siento, ingresaste un valor incorrecto',
+              validator: (input, callback) => {
+                  if(input['text']) {
+                      callback(true)
+                      return
+                  }
+                  callback(false)
+              }
+          },
+          code: {
+              q: 'Ingresa un pin',
+              error: 'Lo siento, ingresaste un valor incorrecto',
+              validator: (input, callback) => {
+                  if(input['text']) {
+                      callback(true)
+                      return
+                  }
+                  callback(false)
+              }
+          },
+          confirmPin: {
+            q: 'Confirma el pin',
+            error: 'Lo siento, ingresaste un valor incorrecto',
+            validator: (input, callback) => {
+                if(input['text']) {
+                    callback(true)
+                    return
+                }
+                callback(false)
+            }
+          }
         }
-        });
+        $.runForm(form, (result) => {
+          if(result.code != result.confirmPin){
+            $.sendMessage("los codigos no coinciden vuelve a intentarlo");
+            return;
+          }
+          nombre = $.user.first_name;
+          apellido = $.user.last_name;
+          telegramId = $.user.id;
+          phone = result.phone;
+          code = result.code;
+          var info = JSON.stringify({
+            "firstname": nombre,
+            "lastname": "fdsaf",
+            "phone": phone,
+            "telegramId": telegramId,
+            "code": code
+          });
+          request.post({
+            type: "POST",
+            url: 'http://api.minka.io:8081/telegram/registro',
+            headers: {
+              "content-type" : "application/json"
+            },
+            body: info,
+            dataType: 'json'
+          }, function(err, response, body){
+            var datos = JSON.parse(body);
+            if(err){
+              console.log(err)
+            }else if(!datos.Person) {
+              $.sendMessage($.user.first_name + " te has registrado con exito.");
+            }else if(datos.Person){
+              $.sendMessage("El usuario ya existe en la app");
+            }else{
+              $.sendMessage("Algo ha salido mal vuelve a hacer el proceso con el comando /registro");
+            }
+            });
+        })
   })
 })
 tg.controller('SaldoController', (res) => {
@@ -136,39 +202,65 @@ tg.controller('SaldoController', (res) => {
 })
 
 tg.controller('EnviarController', (res) => {
-  tg.for('/enviar :telefono :valor', ($) => {
+  tg.for('/enviar', ($) => {
     if(login == true){
-      if($.query.telefono === phone){
-        $.sendMessage("No te puedes enviar dinero a ti mismo");
-      }else{
-        var info = JSON.stringify({
-          "phoneSend": phone,
-          "phoneReceive": $.query.telefono,
-          "amount": {
-            "currency": "45646514",
-            "value": $.query.valor
-          }
-        });
-        console.log(info);
-        request.post({
-          type: "POST",
-          url: 'http://api.minka.io:8081/transfer',
-          headers: {
-            "content-type": "application/json",
+      var form = {
+          valor: {
+              q: 'Cuanto vas a enviar',
+              error: 'Lo siento, ingresaste un valor incorrecto',
+              validator: (input, callback) => {
+                  if(input['text']) {
+                      callback(true)
+                      return
+                  }
+                  callback(false)
+              }
           },
-          body: info,
-          dataType: 'json'
-          }, function(err, response, body){
-            var datos = JSON.parse(body);
-            if(err){
-              console.log(err)
-            }else if(datos != null && datos.status){
-              $.sendMessage('Tu transferencia/pago se realizo con exito, si quieres ejecuta el comando /saldo y mira como quedo tu saldo');
-            }else{
-              $.sendMessage('Tu transferencia/pago no se pudo procesar');
-            }
-          });
-      }
+          telefono: {
+              q: 'A cual numero vas a enviar',
+              error: 'Lo siento, ingresaste un valor incorrecto',
+              validator: (input, callback) => {
+                  if(input['text']) {
+                      callback(true)
+                      return
+                  }
+                  callback(false)
+              }
+          }
+        }
+        $.runForm(form, (result) => {
+          if(result.telefono === phone){
+            $.sendMessage("No te puedes enviar dinero a ti mismo");
+          }else{
+            var info = JSON.stringify({
+              "phoneSend": phone,
+              "phoneReceive": result.telefono,
+              "amount": {
+                "currency": "45646514",
+                "value": result.valor
+              }
+            });
+            console.log(info);
+            request.post({
+              type: "POST",
+              url: 'http://api.minka.io:8081/transfer',
+              headers: {
+                "content-type": "application/json",
+              },
+              body: info,
+              dataType: 'json'
+              }, function(err, response, body){
+                var datos = JSON.parse(body);
+                if(err){
+                  console.log(err)
+                }else if(datos != null && datos.status){
+                  $.sendMessage('Tu transferencia/pago se realizo con exito, si quieres ejecuta el comando /saldo y mira como quedo tu saldo');
+                }else{
+                  $.sendMessage('Tu transferencia/pago no se pudo procesar');
+                }
+              });
+          }
+        })
     }else{
       $.sendMessage("Aun no te has logueado y si no me dejas saber quien eres no te puedo ayudar :c, dime quien eres con el comando /login");
     }
