@@ -70,7 +70,7 @@ tg.router
           });
           request.post({
             type: "POST",
-            url: 'http://api.minka.io:8081/telegram/loginMislukas',
+            url: 'http://api.minka.io:8082/telegram/loginMislukas',
             headers: {
               "content-type": "application/json",
             },
@@ -181,7 +181,7 @@ tg.controller('SaldoController', (res) => {
     if(login == true){
       request.get({
         type: "GET",
-        url: 'http://api.minka.io:8081/person/'+minkaId+'/balance',
+        url: 'http://api.minka.io:8082/person/'+minkaId+'/balance',
         headers: {
           "content-type": "application/json",
         },
@@ -243,7 +243,7 @@ tg.controller('EnviarController', (res) => {
             console.log(info);
             request.post({
               type: "POST",
-              url: 'http://api.minka.io:8081/transfer',
+              url: 'http://api.minka.io:8082/transfer',
               headers: {
                 "content-type": "application/json",
               },
