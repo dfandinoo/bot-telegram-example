@@ -17,24 +17,34 @@ var apellido;
 var balance;
 var telegramId;
 var minkaId;
+var saldo;
+
+//console.log(tg.router.when);
+// var str = tg.message.text;
+// var n = str.includes("start");
+// if(n){
+//   saldo = "saldo";
+// }
+
 
 tg.router
-  .when('/start', 'StartController')
-  .when('/login', 'LoginController')
-  .when('/enviar', 'EnviarController')
-  .when('/saldo', 'SaldoController')
-  .when('/registro', 'RegistroController')
-  .when('/help', 'help')
+  .when('start', 'StartController')
+  .when('login', 'LoginController')
+  .when('enviar', 'EnviarController')
+  .when('saldo', 'SaldoController')
+  .when('registro', 'RegistroController')
+  .when('help', 'HelpController')
   //.otherwise( OtherwiseController())
 
   tg.controller('StartController', (res) => {
-    tg.for('/start', ($) => {
+    tg.for('start', ($) => {
+      //console.log($.message.text);
       $.sendMessage('hola ' + $.user.first_name + " gracias por utilizar mislukasbot para empezar puedes mirar con el comando /help todo lo que puedes hacer");
     })
   })
 
   tg.controller('LoginController', (res) => {
-    tg.for('/login', ($) => {
+    tg.for('login', ($) => {
       var form = {
           codigo: {
               q: 'Escribe tu codigo',
@@ -100,7 +110,7 @@ tg.router
   })
 
   tg.controller('RegistroController', (res) => {
-    tg.for('/registro', ($) => {
+    tg.for('registro', ($) => {
       var form = {
           phone: {
               q: 'Cual es tu numero de celular',
@@ -177,7 +187,7 @@ tg.router
   })
 })
 tg.controller('SaldoController', (res) => {
-  tg.for('/saldo', ($) => {
+  tg.for('saldo', ($) => {
     if(login == true){
       request.get({
         type: "GET",
@@ -202,7 +212,7 @@ tg.controller('SaldoController', (res) => {
 })
 
 tg.controller('EnviarController', (res) => {
-  tg.for('/enviar', ($) => {
+  tg.for('enviar', ($) => {
     if(login == true){
       var form = {
           valor: {
@@ -267,8 +277,8 @@ tg.controller('EnviarController', (res) => {
   })
 })
 
-tg.controller('help', ($) => {
-  tg.for('/help', ($) => {
+tg.controller('HelpController', ($) => {
+  tg.for('help', ($) => {
     $.sendMessage("hola, gracias por contar conmigo\n"+
       "puedes utilizar los siguientes comandos para hablar conmigo\n"+
       "/registro (:telefono :codigo) \t crea una cuenta en nuestra app\n"+
