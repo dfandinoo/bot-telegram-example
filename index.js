@@ -39,7 +39,7 @@ tg.router
   tg.controller('StartController', (res) => {
     tg.for('start', ($) => {
       //console.log($);
-      $.sendMessage('hola ' + $.user.first_name + " gracias por utilizar mislukasbot para empezar puedes mirar con el comando /help todo lo que puedes hacer");
+      $.sendMessage('hola ' + $.user.first_name + " gracias por utilizar mislukasbot para empezar puedes con un help ver lo que puedes hacer");
       nombre = $.user.first_name;
       apellido = $.user.last_name;
       idTelegram = $.user.id;
@@ -135,7 +135,7 @@ tg.controller('EnviarController', (res) => {
                 if(err){
                   console.log(err)
                 }else if(datos != null && datos.status){
-                  $.sendMessage('Tu transferencia/pago se realizo con exito, si quieres ejecuta el comando /saldo y mira como quedo tu saldo');
+                  $.sendMessage('Tu transferencia/pago se realizo con exito.');
                 }else{
                   $.sendMessage('Tu transferencia/pago no se pudo procesar');
                 }
