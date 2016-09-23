@@ -134,9 +134,9 @@ tg.controller('EnviarController', (res) => {
                 if(err){
                   console.log(err)
                 }else if(datos != null && datos.status){
-                  $.sendMessage('Tu transferencia/pago se realizo con exito.');
+                  $.sendMessage('Tu transferencia se realizo con exito.');
                 }else{
-                  $.sendMessage('Tu transferencia/pago no se pudo procesar');
+                  $.sendMessage('Tu transferencia no se pudo procesar');
                 }
               });
           }
