@@ -85,7 +85,6 @@ tg.controller('SaldoController', (res) => {
 
 tg.controller('EnviarController', (res) => {
   tg.for('enviar', ($) => {
-    if(login == true){
       var form = {
           valor: {
               q: 'Cuanto vas a enviar',
@@ -143,9 +142,6 @@ tg.controller('EnviarController', (res) => {
               });
           }
         })
-    }else{
-      $.sendMessage("Aun no te has logueado y si no me dejas saber quien eres no te puedo ayudar :c, dime quien eres con el comando /login");
-    }
   })
 })
 
