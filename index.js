@@ -61,7 +61,7 @@ tg.router
       });
     })
   })
-  
+
 tg.controller('SaldoController', (res) => {
   tg.for('saldo', ($) => {
       request.get({
@@ -98,8 +98,8 @@ tg.controller('EnviarController', (res) => {
                   callback(false)
               }
           },
-          telefono: {
-              q: 'A cual numero vas a enviar',
+          user: {
+              q: 'A cual usuario le vas a enviar',
               error: 'Lo siento, ingresaste un valor incorrecto',
               validator: (input, callback) => {
                   if(input['text']) {
@@ -111,12 +111,12 @@ tg.controller('EnviarController', (res) => {
           }
         }
         $.runForm(form, (result) => {
-          if(result.telefono === phone){
+          if(result.username === $.user.username){
             $.sendMessage("No te puedes enviar dinero a ti mismo");
           }else{
             var info = JSON.stringify({
-              "phoneSend": phone,
-              "phoneReceive": result.telefono,
+              "idSend": $.user.id,
+              "userReceive": result.username,
               "amount": {
                 "currency": "45646514",
                 "value": result.valor
