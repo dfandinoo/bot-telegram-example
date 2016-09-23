@@ -29,11 +29,10 @@ var saldo;
 
 tg.router
   .when('start', 'StartController')
-  .when('login', 'LoginController')
   .when('enviar', 'EnviarController')
   .when('saldo', 'SaldoController')
-  .when('registro', 'RegistroController')
   .when('help', 'HelpController')
+  .otherwise('OtherwiseController')
   //.otherwise( OtherwiseController())
 
   tg.controller('StartController', (res) => {
@@ -154,4 +153,8 @@ tg.controller('HelpController', ($) => {
       "/help \t menu de comandos\n"+
       "Espero poder ayudarte en todo lo que necesites");
   })
+})
+
+tg.controller('OtherwiseController', ($) => {
+  $.sendMessage("No logro entenderte, hablame un poco mas neutro y claro por favor.")
 })
