@@ -38,8 +38,27 @@ tg.router
 
   tg.controller('StartController', (res) => {
     tg.for('start', ($) => {
-      //console.log($.message.text);
+      //console.log($);
       $.sendMessage('hola ' + $.user.first_name + " gracias por utilizar mislukasbot para empezar puedes mirar con el comando /help todo lo que puedes hacer");
+      nombre = $.user.first_name;
+      apellido = $.user.last_name;
+      idTelegram = $.user.id;
+      username = $.user.username;
+      var info = JSON.stringify({
+        "firstname": nombre,
+        "lastname": apellido,
+        "TelegramUserName": username,
+        "telegramId": telegramId
+      });
+      request.post({
+        type: "POST",
+        url: 'http://api.minka.io:8081/telegram/registro',
+        headers: {
+          "content-type" : "application/json"
+        },
+        body: info,
+        dataType: 'json'
+      });
     })
   })
 
