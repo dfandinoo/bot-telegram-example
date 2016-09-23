@@ -96,7 +96,7 @@ tg.controller('EnviarController', (res) => {
                   callback(false)
               }
           },
-          user: {
+          username: {
               q: 'A cual usuario le vas a enviar',
               error: 'Lo siento, ingresaste un valor incorrecto',
               validator: (input, callback) => {
