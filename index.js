@@ -37,32 +37,38 @@ tg.router
 
   tg.controller('StartController', (res) => {
     tg.for('start', ($) => {
-      //console.log($);
-      $.sendMessage('hola ' + $.user.first_name + " gracias por utilizar mislukasbot para empezar puedes con un help ver lo que puedes hacer");
-      nombre = $.user.first_name;
-      apellido = $.user.last_name;
-      idTelegram = $.user.id;
-      username = $.user.username;
-      var info = JSON.stringify({
-        "firstname": nombre,
-        "lastname": apellido,
-        "username": username,
-        "idTelegram": idTelegram
-      });
-      request.post({
-        type: "POST",
-        url: 'http://api.minka.io:8082/telegram/registro',
-        headers: {
-          "content-type" : "application/json"
-        },
-        body: info,
-        dataType: 'json'
-      });
+      if($.user.username == null){
+        $.sendMessage('hola ' + $.user.first_name + " tienes que configurar un username para poder interactuar conmigo luego dale la palabra start.");
+      }else{
+        $.sendMessage('hola ' + $.user.first_name + " gracias por utilizar mislukasbot para empezar puedes con un help ver lo que puedes hacer");
+        nombre = $.user.first_name;
+        apellido = $.user.last_name;
+        idTelegram = $.user.id;
+        username = $.user.username;
+        var info = JSON.stringify({
+          "firstname": nombre,
+          "lastname": apellido,
+          "username": username,
+          "idTelegram": idTelegram
+        });
+        request.post({
+          type: "POST",
+          url: 'http://api.minka.io:8082/telegram/registro',
+          headers: {
+            "content-type" : "application/json"
+          },
+          body: info,
+          dataType: 'json'
+        });
+      }
     })
   })
 
 tg.controller('SaldoController', (res) => {
   tg.for('saldo', ($) => {
+    if($.user.username == null){
+      $.sendMessage('hola ' + $.user.first_name + " tienes que configurar un username para poder interactuar conmigo luego dale la palabra start.");
+    }else{
       request.get({
         type: "GET",
         url: 'http://api.minka.io:8082/person/'+$.user.id+'/balance',
@@ -79,11 +85,15 @@ tg.controller('SaldoController', (res) => {
           $.sendMessage($.user.first_name +" tu saldo en estos momentos es de " + saldo.balance + " LUK");
         }
       });
+    }
   })
 })
 
 tg.controller('EnviarController', (res) => {
   tg.for('enviar', ($) => {
+    if($.user.username == null){
+      $.sendMessage('hola ' + $.user.first_name + " tienes que configurar un username para poder interactuar conmigo luego dale la palabra start.");
+    }else{
       var form = {
           valor: {
               q: 'Cuanto vas a enviar',
@@ -141,6 +151,7 @@ tg.controller('EnviarController', (res) => {
               });
           }
         })
+      }
   })
 })
 
@@ -156,5 +167,6 @@ tg.controller('HelpController', ($) => {
 })
 
 tg.controller('OtherwiseController', ($) => {
-  $.sendMessage("No logro entenderte, hablame un poco mas neutro y claro por favor.")
+  $.sendMessage("No logro entenderte, hablame un poco mas neutro y claro por favor.");
+
 })
