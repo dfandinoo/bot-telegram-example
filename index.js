@@ -46,14 +46,29 @@ tg.router
         idTelegram = $.user.id;
         username = $.user.username;
         var info = JSON.stringify({
-          "firstname": nombre,
-          "lastname": apellido,
-          "username": username,
-          "idTelegram": idTelegram
+          "channel": [
+            {
+              "type": "telegram",
+              "name": "telegram",
+              "value": idTelegram,
+              "username": username,
+              "notificationId": idTelegram,
+              "status": "unverified"
+            }
+          ],
+          "properties": [
+            {
+              "name": "firstname",
+              "value": nombre
+            },
+            {
+              "name": "lastname",
+              "value": apellido
+            }
         });
         request.post({
           type: "POST",
-          url: 'http://api.minka.io:8082/telegram/registro',
+          url: 'http://api.minka.io:8082/person',
           headers: {
             "content-type" : "application/json"
           },
@@ -78,10 +93,10 @@ tg.controller('SaldoController', (res) => {
         dataType: 'json'
       }, function(err, response, body){
         var datos = JSON.parse(body);
-        var saldo = datos.wallet;
+        var saldo = datos.coin;
         if(err){
           console.log(err)
-        }else if(datos.wallet){
+        }else if(datos.coin){
           $.sendMessage($.user.first_name +" tu saldo en estos momentos es de " + saldo.balance + " LUK");
         }
       });
@@ -128,6 +143,17 @@ tg.controller('EnviarController', (res) => {
               "amount": {
                 "currency": "45646514",
                 "value": result.valor
+              "_links": {
+               "source": $.user.id,
+               "destination": result.username
+              },
+                "amount": {
+                    "currency": "LUK",
+                    "value": result.valor
+                },
+                "metadata": {
+                      "description": "enviado desde telegram",
+                }
               }
             });
             console.log(info);
