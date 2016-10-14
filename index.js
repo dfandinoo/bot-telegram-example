@@ -65,6 +65,7 @@ tg.router
               "name": "lastname",
               "value": apellido
             }
+          ]
         });
         request.post({
           type: "POST",
@@ -149,7 +150,6 @@ tg.controller('EnviarController', (res) => {
                 "metadata": {
                       "description": "enviado desde telegram"
                 }
-              }
             });
             console.log(info);
             request.post({
@@ -164,7 +164,7 @@ tg.controller('EnviarController', (res) => {
                 var datos = JSON.parse(body);
                 if(err){
                   console.log(err)
-                }else if(datos != null && datos.status){
+                }else if(datos != null){
                   $.sendMessage('Tu transferencia se realizo con exito.');
                 }else{
                   $.sendMessage('Tu transferencia no se pudo procesar');
