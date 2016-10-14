@@ -138,11 +138,6 @@ tg.controller('EnviarController', (res) => {
             $.sendMessage("No te puedes enviar dinero a ti mismo");
           }else{
             var info = JSON.stringify({
-              "idSend": $.user.id,
-              "userReceive": result.username,
-              "amount": {
-                "currency": "45646514",
-                "value": result.valor
               "_links": {
                "source": $.user.id,
                "destination": result.username
@@ -152,7 +147,7 @@ tg.controller('EnviarController', (res) => {
                     "value": result.valor
                 },
                 "metadata": {
-                      "description": "enviado desde telegram",
+                      "description": "enviado desde telegram"
                 }
               }
             });
