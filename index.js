@@ -32,6 +32,7 @@ tg.router
   .when('enviar', 'EnviarController')
   .when('saldo', 'SaldoController')
   .when('help', 'HelpController')
+  .when('pagar', 'PagarController')
   .otherwise('OtherwiseController')
   //.otherwise( OtherwiseController())
 
@@ -184,6 +185,12 @@ tg.controller('HelpController', ($) => {
       "/saldo \t consulta tu saldo\n"+
       "/help \t menu de comandos\n"+
       "Espero poder ayudarte en todo lo que necesites");
+  })
+})
+
+tg.controller('PagarController', ($) => {
+  tg.for('pagar', ($) => {
+    $.sendMessage($.user.first_name + " se realizo el pago de tu factura de luz por un valor de $6 LUK");
   })
 })
 
