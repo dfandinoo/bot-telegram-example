@@ -70,7 +70,7 @@ tg.router
         });
         request.post({
           type: "POST",
-          url: 'http://api.minka.io:8082/person',
+          url: 'http://api.minka.io/person',
           headers: {
             "content-type" : "application/json"
           },
@@ -88,7 +88,7 @@ tg.controller('SaldoController', (res) => {
     }else{
       request.get({
         type: "GET",
-        url: 'http://api.minka.io:8082/person/'+$.user.id+'/balance',
+        url: 'http://api.minka.io/person/'+$.user.id+'/balance',
         headers: {
           "content-type": "application/json",
         },
@@ -155,7 +155,7 @@ tg.controller('EnviarController', (res) => {
             console.log(info);
             request.post({
               type: "POST",
-              url: 'http://api.minka.io:8082/transfer',
+              url: 'http://api.minka.io/transfer',
               headers: {
                 "content-type": "application/json",
               },
