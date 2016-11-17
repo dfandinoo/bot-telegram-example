@@ -19,13 +19,6 @@ var telegramId;
 var minkaId;
 var saldo;
 
-//console.log(tg.router.when);
-// var str = tg.message.text;
-// var n = str.includes("start");
-// if(n){
-//   saldo = "saldo";
-// }
-
 
 tg.router
   .when('start', 'StartController')
@@ -41,42 +34,115 @@ tg.router
       if($.user.username == null){
         $.sendMessage('hola ' + $.user.first_name + " tienes que configurar un username para poder interactuar conmigo luego dale la palabra start.");
       }else{
-        $.sendMessage('hola ' + $.user.first_name + " gracias por utilizar mislukasbot para empezar puedes con un help ver lo que puedes hacer");
-        nombre = $.user.first_name;
-        apellido = $.user.last_name;
-        idTelegram = $.user.id;
-        username = $.user.username;
-        var info = JSON.stringify({
-          "channel": [
-            {
-              "type": "telegram",
-              "name": "telegram",
-              "value": idTelegram,
-              "username": username,
-              "notificationId": idTelegram,
-              "status": "unverified"
-            }
-          ],
-          "properties": [
-            {
-              "name": "firstname",
-              "value": nombre
-            },
-            {
-              "name": "lastname",
-              "value": apellido
-            }
-          ]
-        });
-        request.post({
-          type: "POST",
-          url: 'http://api.minka.io/person',
-          headers: {
-            "content-type" : "application/json"
+        var form = {
+          phone: {
+              q:  'hola ' + $.user.first_name + " bienvenido a mislukasbot, para empezar por favor confirmame tu numero celular",
+              error: 'Lo siento, ingresaste un valor incorrecto',
+              validator: (input, callback) => {
+                  if(input['text']) {
+                    request.post({
+                      type: "POST",
+                      url: 'http://api.minka.io/channel/'+input['text']+"/sendotp",
+                      headers: {
+                        "content-type": "application/json",
+                      },
+                      dataType: 'json'
+                      }, function(err, response, body){
+                        //var datos = JSON.parse(body);
+                        if(err){
+                          console.log(err)
+                        }
+                      });
+                      callback(true)
+                      return
+                  }
+                  callback(false)
+              }
           },
-          body: info,
-          dataType: 'json'
-        });
+          code: {
+              q: 'Ingresa el codigo que te enviamos a tu celular',
+              error: 'Lo siento, ingresaste un valor incorrecto',
+              validator: (input, callback) => {
+                  if(input['text']) {
+                      callback(true)
+                      return
+                  }
+                  callback(false)
+              }
+          }
+        }
+        $.runForm(form, (result) => {
+          var info = JSON.stringify({
+            "code": result.code
+          });
+            request.post({
+              type: "POST",
+              url: 'http://api.minka.io/channel/'+result.phone+"/verify",
+              headers: {
+                "content-type": "application/json",
+              },
+              body: info,
+              dataType: 'json'
+              }, function(err, response, body){
+                console.log("body", body);
+                var datos = JSON.parse(body);
+                console.log("datos", datos);
+                if(err){
+                  console.log(err)
+                }else if(datos.response){
+                  nombre = $.user.first_name;
+                  apellido = $.user.last_name;
+                  idTelegram = $.user.id;
+                  username = $.user.username;
+                  telefono = result.phone;
+                  var info = JSON.stringify({
+                    "channel": [
+                      {
+                        "type": "telegram",
+                        "name": "telegram",
+                        "value": idTelegram,
+                        "username": username,
+                        "notificationId": idTelegram,
+                        "status": "verified"
+                      },
+                      {
+                        "type": "phone",
+                        "name": "phone",
+                        "value": phone,
+                        "username": phone,
+                        "notificationId": phone,
+                        "status": "verified"
+                      }
+                    ],
+                    "properties": [
+                      {
+                        "name": "firstname",
+                        "value": nombre
+                      },
+                      {
+                        "name": "lastname",
+                        "value": apellido
+                      }
+                    ]
+                  });
+                  request.post({
+                    type: "POST",
+                    url: 'http://api.minka.io/person',
+                    headers: {
+                      "content-type" : "application/json"
+                    },
+                    body: info,
+                    dataType: 'json'
+                  },function(err, response, body){
+                    if(err)
+                      console.error(err)
+                    $.sendMessage("Listo ahora puedes utilizar todos los servicios de mislukasbot");
+                  });
+                }else{
+                  $.sendMessage('Se presento un error vuelve a intentarlo');
+                }
+              });
+        })
       }
     })
   })
